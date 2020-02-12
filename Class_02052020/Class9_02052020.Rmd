@@ -1,0 +1,160 @@
+---
+title: "Class 9 02052020"
+author: "Jenny"
+date: "2/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## K-means clustering
+
+Let's try the `kmeans()` function
+
+```{r}
+tmp <- c(rnorm(30,-3), rnorm(30,3))
+x <- cbind(x=tmp, y=rev(tmp))
+
+plot(x)
+
+```
+
+
+Use the `kmeans()` function setting k to 2 and nstart to 20
+```{r}
+km <- kmeans(x, centers = 2, nstart = 20)
+```
+
+Inspect the result
+```{r}
+km
+
+```
+
+What is in the output object
+```{r}
+attributes(km)
+```
+
+Q. How many points are in each cluster?
+```{r}
+km$size
+```
+
+Q. What component of your result object details
+    -cluster size
+    -cluster assignment/membership
+    -cluster center
+    
+```{r}
+km$cluster
+
+table(km$cluster)
+```
+
+Plot it out
+```{r}
+plot(x, col=km$cluster+4)
+points(km$centers, col=7, pch=15, cex=2)
+```
+
+##Hierarchal clustering
+Do not need to know how many clusters to expect from the final analysis
+# First we need to calculate point (dis)similarity
+# as the Euclidean distance between observations
+```{r}
+dist_matrix <- dist(x)
+```
+
+# The hclust() function returns a hierarchical
+# clustering model
+```{r}
+hc <- hclust(d = dist_matrix)
+plot(hc)
+abline(h=6, col="red", lty=2)
+```
+
+```{r}
+cutree(hc, h=6)
+```
+
+```{r}
+table(cutree(hc, h=3.5))
+```
+
+# Using different hierarchical clustering methods
+
+```{r}
+# Step 1. Generate some example data for clustering
+x <- rbind(
+ matrix(rnorm(100, mean=0, sd=0.3), ncol = 2), # c1
+ matrix(rnorm(100, mean=1, sd=0.3), ncol = 2), # c2
+ matrix(c(rnorm(50, mean=1, sd=0.3), # c3
+ rnorm(50, mean=0, sd=0.3)), ncol = 2))
+colnames(x) <- c("x", "y")
+
+# Step 2. Plot the data without clustering
+plot(x)
+
+# Step 3. Generate colors for known clusters
+# (just so we can compare to hclust results)
+col <- as.factor( rep(c("c1","c2","c3"), each=50) )
+plot(x, col=col)
+```
+
+Q. Use the dist(), hclust(), plot() and cutree()
+ functions to return 2 and 3 clusters
+ 
+```{r}
+hc <- hclust(dist(x))
+
+plot(hc)
+```
+ 
+#see three major groups, so use cutree to make three clusters
+```{r}
+grps3 <- cutree(hc, k=3)
+table(grps3)
+```
+
+ 
+Q. How does this compare to your known 'col' groups?
+
+```{r}
+plot(x, col=grps3+3)
+```
+
+
+
+
+## PCA of Eating Habits in the UK
+```{r}
+x <- read.csv("UK_foods.csv", row.names = 1)
+x
+```
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+
+```
+
+```{r}
+# Use the prcomp() PCA function 
+pca <- prcomp( t(x) )
+summary(pca)
+```
+Looking at the data for proportion of variance, you can see that that PC1 accounts for 67% of the variance and PC2 accounts for 29%, meaning that if you compare PC1 and PC2 you can account for 96.5% of the variance between the data sets
+
+
+```{r}
+# Plot PC1 vs PC2
+plot(pca$x[,1], pca$x[,2], xlab="PC1 (67.5%)", ylab="PC2 (29.1%)", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x), col=c("black", "red", "blue", "darkgreen"))
+```
+
