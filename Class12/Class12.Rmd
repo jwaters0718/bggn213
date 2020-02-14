@@ -92,3 +92,8 @@ grps.rd <- cutree(hc.rd, k=3)
 plot(pc, 1:2, col="grey50", bg=grps.rd, pch=21, cex=1)
 ```
 
+```{r}
+# Visualize first principal component
+pc1 <- mktrj(pc, pc=1, file="pc_1.pdb")
+```
+
