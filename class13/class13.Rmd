@@ -1,0 +1,52 @@
+---
+title: "Structure based drug design"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Download and process starting structure
+
+Here we download and clean up the structure of HIV-Pr (PDB code: 1HSG) from the main PDB database. We will make a separate set of "protein only" and "ligand only" files.
+
+```{r}
+file.name <- get.pdb("1hsg")
+HIVpdb <- read.pdb("1hsg")
+```
+
+We will use `read.pdb()`, `atom.select()`, and `write.pdb()` functions to make our separate "protein only" and "ligand only" PDB files
+
+## Protein only
+
+```{r}
+prot <- atom.select(HIVpdb, "protein", value = TRUE)
+write.pdb(prot, file = "1hsg_protein.pdb")
+prot
+```
+
+## Ligand only
+
+```{r}
+lig <- atom.select(HIVpdb, "ligand", value = TRUE)
+write.pdb(lig, file = "1hsg_ligand.pdb")
+lig
+```
+
+## Docking
+
+To visualize the docks and compare to the crystal conformation of the ligand we will create a PDB format file that can be loaded into VMD or PyMol
+
+```{r}
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+res
+```
+
+```{r}
+# res <- read.pdb("all.pdbqt", multi=TRUE)
+ori <- read.pdb("ligand.pdbqt")
+rmsd(ori, res)
+```
+
