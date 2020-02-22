@@ -1,0 +1,117 @@
+---
+title: "RNA-Seq Analysis part 2 "
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## GitHub Documents
+
+## Read our data for today
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors = FALSE)
+metadata <-  read.csv("airway_metadata.csv", stringsAsFactors = FALSE)
+```
+
+## Exploratory data analysis
+
+```{r}
+control <- metadata[metadata[,"dex"]=="control",]
+control.mean <- rowSums( counts[ ,control$id] )/4
+names(control.mean) <- counts$engene
+```
+
+We will compare our treated data to our control data to determine the relative number of counts or "reads" per gene.
+
+We will first extract the control columns by looking up their colnames in the `metadata` object.
+
+```{r}
+#metadata$dex == "control"
+
+#Access just the control metadata
+control <- metadata[metadata$dex == "control",]$id
+```
+
+```{r}
+# Access the count columns with control$id
+counts[ , control$id]
+
+# By leaving the row blank, it selects all of the rows which contain all analyzed genes from the experiment
+```
+
+```{r}
+# Now find the mean value for each row
+
+means <- rowMeans(counts[,control$id])
+```
+
+## Treated samples code
+
+```{r}
+treated <- metadata[metadata[,"dex"] == "treated",]
+treated.mean <- rowMeans(counts[,treated$id])
+
+treated.mean
+```
+
+## Put them together for ease of use
+
+```{r}
+mycounts <-data.frame(control.mean, treated.mean)
+```
+
+Time to plot some data!
+
+```{r}
+plot(mycounts, )
+```
+
+```{r}
+hist(mycounts$control.mean, breaks = 300)
+```
+
+Data is very skewed, which indicates that it should be viewed on a log scale
+
+```{r}
+plot(mycounts, log="xy")
+```
+
+Lets remove our zero count genes because we can't say anything about them from this dataset
+
+```{r}
+x <- data.frame(c(1,3,10,0), c(1,3,0,0))
+unique(which(x == 0, arr.ind = T)[,"row"])
+```
+how to use which
+
+```{r}
+to.rm <- unique(which(mycounts == 0, arr.ind = T)[,"row"])
+newcounts <- mycounts[-to.rm,]
+nrow(newcounts)
+```
+
+```{r}
+newcounts$log2fc <- log2(newcounts[,"treated.mean"]/newcounts[,"control.mean"])
+head(newcounts)
+```
+
+A common rule of thumb in the field is to use log2FC of greater than +2 as `upregulated` and less than -2 as `downregulated`
+
+How many of our genes are up/down regulated upon dex treatment?
+
+```{r}
+sum(newcounts$log2fc > 2)
+sum(newcounts$log2fc < -2)
+```
+
+## DESeq Analysis
+
+```{r}
+library(DESeq2)
+citation("DESeq2")
+```
+
+need to update
