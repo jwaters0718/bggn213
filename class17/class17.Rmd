@@ -58,19 +58,32 @@ round(death_cases/total_cases * 100, 2)
 > Q4. What is the death rate in "Mainland China"?
 
 ```{r}
-allregions <- virus$Country.Region
-mainland_china <- allregions == "Mainland China"
-sum(mainland_china)
+library(tidyverse)
+library(DescTools)
 
-inds <- virus$type =="death"
-death_cases <- sum(virus[inds,"cases"])
-death_cases
+rates_all <- virus%>%
+  group_by(Country.Region, type)%>%
+  summarize_if(is.numeric, sum)%>%
+  ungroup()%>%
+  group_by(Country.Region)%>%
+  mutate(rate = cases/sum(cases)*100)%>%
+  ungroup()
+
+rates_all%>%
+  filter(Country.Region == "Mainland China",
+         type == "death")%>%
+  select(rate)
+
 ```
 
 
 > Q5. What is the death rate in Italy, Iran and the US?
 
 ```{r}
+rates_all%>%
+  filter(Country.Region %in% c("Italy", "Iran", "US"),
+           type == "death")
+
 
 ```
 
